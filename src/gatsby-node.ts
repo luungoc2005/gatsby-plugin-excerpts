@@ -12,16 +12,6 @@ import cheerio from 'cheerio';
 import truncate from 'truncate-html';
 import {IExcerptsPluginConfiguration, IExcerptSourceConfigurationBase, IExcerptSourceConfigurationHtmlQuery} from './ConfigurationTypes';
 
-let config: IExcerptsPluginConfiguration = {
-    sources: {},
-    sourceSets: {},
-    excerpts: {}
-};
-
-export function onPreBootstrap(_: any, configuration: IExcerptsPluginConfiguration) {
-    config = configuration;
-}
-
 abstract class SourceType<T extends IExcerptSourceConfigurationBase, U, V> {
     constructor(settings: T) {}
 
@@ -78,7 +68,7 @@ const excerptSourceTypes: { [type: string]: new (any) => SourceType<any, any, an
     htmlQuery: HtmlQuery
 };
 
-async function getExcerpt(excerptName, nodeType, node, info: any, ctx: any) {
+async function getExcerpt(excerptName, nodeType, node, info: any, ctx: any, config: IExcerptsPluginConfiguration) {
     const excerptSettings = config.excerpts[excerptName];
     const sourceSetName = excerptSettings.nodeTypeSourceSet[nodeType] || excerptSettings.nodeTypeSourceSet["*"];
     const sourceSet = config.sourceSets[sourceSetName];
@@ -132,7 +122,7 @@ async function getExcerpt(excerptName, nodeType, node, info: any, ctx: any) {
     }
 };
 
-export async function setFieldsOnGraphQLNodeType({type}) {
+export async function setFieldsOnGraphQLNodeType({type}, config: IExcerptsPluginConfiguration) {
     let fields = {};
     for(const excerptName in config.excerpts) {
         const excerpt = config.excerpts[excerptName];
@@ -140,7 +130,7 @@ export async function setFieldsOnGraphQLNodeType({type}) {
         if(sourceSetName) {
             fields[excerptName] = {
                 type: GraphQLString,
-                resolve: (node, args, ctx, info) => getExcerpt(excerptName, type.name, node, info, ctx)
+                resolve: (node, args, ctx, info) => getExcerpt(excerptName, type.name, node, info, ctx, config)
             };
         }
     }
