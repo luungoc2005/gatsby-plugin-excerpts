@@ -18,7 +18,7 @@ let config: IExcerptsPluginConfiguration = {
     excerpts: {}
 };
 
-export function onPreInit(_: any, configuration: IExcerptsPluginConfiguration) {
+export function onPreBootstrap(_: any, configuration: IExcerptsPluginConfiguration) {
     config = configuration;
 }
 
